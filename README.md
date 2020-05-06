@@ -103,7 +103,9 @@ $ source venv/bin/activate
 (venv) $ pip install scrapy
 ```
 
-# Scrapy CLI
+# Scrapy CLI (in a non-project directory)
+
+This is the Scrapy CLI when `scrapy` is executed in a directory which is not a Scrapy project directory (it does not contain `scrapy.cfg`):
 
 ```
 $ scrapy
@@ -190,7 +192,7 @@ This creates file `worldometers/worldometers/spiders/countries.py` which contain
 * `allowed_domains` - list of domain names that spider is allowed to access and scrape. Originally it contains `www.worldometers.info/world-population/population-by-country` but we can remove path in this url and leave only domain name: `www.worldometers.info/`. If any scraped page contains links to web pages at any other domain name, those pages will not be scraped. Domain name does not contain protocol prefix (e.g. `http://`).
 * `start_urls` - contains all the links we want to scrape. Originally, it contains `http://www.worldometers.info/world-population/population-by-country/` (Scrapy uses `http://` protocol by default) but we can change it to `https://www.worldometers.info/world-population/population-by-country/` (if website supports https).
 
-This class also contains `parse` method receives a response as its parameter.
+This class also contains an empty `parse` method which receives a response as its parameter. We'll later modify this method in order to extract data from response.
 
 # Scrapy shell
 
@@ -272,6 +274,8 @@ We can also create request and pass it to `fetch()`:
 2020-04-28 08:06:14 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://www.worldometers.info/world-population/population-by-country/> (referer: None)
 ```
 
+It is not possible to assign response to a variable and keep multiple responses. The response of the last request is kept in variable named `response`.
+
 To see the HTML from response:
 ```
 >>> response.body
@@ -295,9 +299,133 @@ Spiders see web pages without JavaScript. To see how they see them, we can disab
 
 Spiders can't render JavaScript.
 
-To exit shell:
+## How to scrape elements from a web page in shell?
+
+### Example #1
+
+From https://www.worldometers.info/world-population/population-by-country/ we want to scrape a title, which is "Countries in the world by population (2020)".
+
+In a browser, we load this page, select the desired element, right click and Inspect. Developer Tools opens and we can see the position of that element in HTML. CTRL+F opens search bar where we can type our XPath expression. As the title is the text within `h1` tag we write:
 ```
-quit()
+//h1
+```
+This will highlight the title.
+
+We can use this XPath expression to query the HTML response we got in Scrapy shell earlier. The output is a list with a single Selector element:
+```
+>>> response.xpath("//h1")
+[<Selector xpath='//h1' data='<h1>Countries in the world by populat...'>]
+```
+
+To get just text we need to call XPath function `text()`:
+```
+>>> response.xpath("//h1/text()")
+[<Selector xpath='//h1/text()' data='Countries in the world by population ...'>]
+```
+We can assign the result to a variable of type `Selector`:
+```
+>>> title = response.xpath("//h1/text()")
+```
+...and to return just `data` member we can use `get()`:
+```
+>>> title.get()
+'Countries in the world by population (2020)'
+```
+
+To use CSS Selector:
+```
+>>> title_css = response.css("h1::text")
+>>> title_css.get()
+'Countries in the world by population (2020)'
+```
+
+CSS selector uses XPath selector underneath:
+```
+>>> title_css
+[<Selector xpath='descendant-or-self::h1/text()' data='Countries in the world by population ...'>]
+```
+...which means that we can avoid this extra step by using XPath selector directly.
+
+### Example #2
+
+We want to get the names of all countries from the web page.
+
+XPath expresson
+```
+//td/a
+```
+returns 235 results:
+
+![Countries in the world by population](worldometer-countries-xpath.png)
+
+As the result of XPath query is a list of multiple Selectors, we need to use `getall()`:
+```
+>>> countries = response.xpath("//td/a/text()").getall()
+>>> countries
+['China', 'India', 'United States',...]
+```
+
+Version with CSS selector:
+```
+>>> countries = response.css(" td a::text").getall()
+>>> countries
+['China', 'India', 'United States',
+```
+
+Use exit() or Ctrl-D (i.e. EOF) to exit:
+```
+exit()
+```
+# How to implement a spider?
+
+We need to go to `worldometers/worldometers/spiders/countries.py` and in `CountriesSpider` add some code to the body of the `parse` function. We can use someting like:
+
+```
+single_item = response.xpath("//../ ... /../text()").get()
+items_list = response.xpath("//../ ... /../ /text()").getall()
+
+yield {
+    'single_item': single_item
+    'items_list': items_list
+}
+```
+
+# Scrapy CLI (from a project directory)
+
+If `scrapy` is run from a project directory (the one which contains `scrapy.cfg`), new commands are available:
+
+```
+(venv) ../scrapy-demo/worldometers$ scrapy
+Scrapy 2.1.0 - project: worldometers
+
+Usage:
+  scrapy <command> [options] [args]
+
+Available commands:
+  bench         Run quick benchmark test
+  check         Check spider contracts
+  crawl         Run a spider
+  edit          Edit spider
+  fetch         Fetch a URL using the Scrapy downloader
+  genspider     Generate new spider using pre-defined templates
+  list          List available spiders
+  parse         Parse URL (using its spider) and print the results
+  runspider     Run a self-contained spider (without creating a project)
+  settings      Get settings values
+  shell         Interactive scraping console
+  startproject  Create new project
+  version       Print Scrapy version
+  view          Open URL in browser, as seen by Scrapy
+
+Use "scrapy <command> -h" to see more info about a command
+```
+
+# How to run a spider?
+
+From a project root directory (with `scrapy.cfg`):
+
+```
+(venv) ../scrapy-demo/worldometers$ scrapy crawl countries
 ```
 
 
