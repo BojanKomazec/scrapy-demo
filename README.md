@@ -429,8 +429,206 @@ From a project root directory (with `scrapy.cfg`):
 ```
 
 
+# CSS
+
+CSS = Cascading Style Sheet; language created to style HTML pages.
+
+CSS selectors use CSS to find HTML elements.
+
+Sometimes CSS selectors have cleaner syntax than XPath. Example:
+Compare selectors for this element:
+```
+<div class='classA classB'>...</div>
+```
+
+XPath: `//div[@class='classA classB']`
+
+CSS: `.classA.classB`
+
+Copy-paste HTML document from https://pastebin.com/ZS0ALH8t to https://try.jsoup.org/ and use "CSS Query" field to
+filter the HTML by CSS. It is also possible to type in the URL and use "Fetch URL" to load any web page.
+
+## Examples how to select elements based on their tags (names) and attributes:
+
+`h1` returns all "h1" elements.
+
+`h1, h2` returns all "h1" and "h2" elements.
+
+`li` returns all "li" elements.
+
+`.bold` returns all elements which contain class "bold".
+
+`#location` returns all elements which have `id="location"`
+`#location#position` returns all elements which have `id="location"` and elements which have `id="position"`
+
+Multiple tags can have `class` attribute set to the same value.
+Only one tag can have `id` attribute set to some value.
+
+`div.intro` selects only those `div` elements that have `class` attribute set to "intro".
+
+`span#location` selects only that `span` elements which has `id` attribute set to "location".
+
+(Since `id` is unique, we can use just `id` value in selector: `#location`).
+
+`bold.italic` selects elements which has `class` attribute set to "bold" and "italic".
+
+CSS has other standard attrubutes like `href` and also non-standard ("foreign") attributes which are not included in HTML standard like e.g. `data-identifier`.
+
+`li[data-identifier=7]` selects `li` tag which has `data-identifier` attribute set to 7.
+
+`[data-identifier=7]` selects any tag which has `data-identifier` attribute set to 7.
+
+It is possible to specify conditions for filtering values.
+
+`a[href^=https]` selects all `a` elements whose `href` attribute start with "https".
+
+`a[href^=http]:not(a[href^=https])` selects all `a` elements whose `href` attribute start with "http" but not with "https".
+
+`a[href$=rs]` selects all `a` elements whose `href` attribute ends with "rs".
+
+`a[href*=google]` selects all `a` elements whose `href` attribute contains "google".
+
+
+## Examples how to select elements based on their positions:
+
+`div p` selects all `p` elements that are within any `div`.
+
+`div.intro p` selects all `p` elements that are within `div` which `class` is set to "intro".
+
+This will not include descendants of that `div` though. If we want to include them as well:
+
+`div.intro p, span#location` or `div.intro p, #location`
+
+`div.intro > p` selects all `p` elements that are direct children of `div` which `class` is set to "intro".
+
+`div.intro + p` selects all `p` elements that are placed immediately after `div` which `class` is set to "intro".
+
+Desired element MUST be immediately after `div`.
+
+E.g. `div.intro + span` in our example won't return anything as `span` is not placed immediately after `div`.
+
+`>` and `+` signs in CSS terminology are known as *CSS combinators*.
+
+General sibling combinator `~` is used to select elements that are placed after some other element regradless whether thety are placed immediately or not after it. E.g.
+
+`div ~ p` selects p element in this case:
+
+```
+div
+
+some other elements
+
+p
+```
+
+`li:nth-child(1)` selects 1st `li` element within its parent (`ul` in our example).
+
+`li:nth-child(1), li:nth-child(3)` selects 1st and 3rd `li` element within its parent (`ul` in our example).
+
+`li:nth-child(odd)` selects all `li` element at odd index positions within their parent (`ul` in our example).
+
+`li:nth-child(even)` selects all `li` element at even index positions within their parent (`ul` in our example).
+
+
+# XPath
+
+XPath = XML Path Language; can be used for HTML.
+
+We use XPath selectors against elements tree to select nodes.
+
+CSS selectors look cleaner but XPath selectors are richer in functionality.
+
+XPath allows going up and down the HTML while CSS does not.
+
+To practice XPath selectors copy-paste your HTML file into https://scrapinghub.github.io/xpath-playground/ and enter XPath expression in the 'XPath' field.
+
+Selector starts with double slash.
+
+## Selecting elements by name, attributes and values
+
+`//h1` returns all `h1` elements.
+
+To select element by the value of its attribute use `[@attribute=value]` predicate (condition expression):
+
+`//div[@class='intro']` returns all `div` elements which have `class` attribute set to 'intro'.
+
+`//div[@class='intro']/p` returns all `p` elements inside all `div` elements which have `class` attribute set to 'intro'.
+
+`//div[@class='intro' or @class='intro']` returns all `div` elements which have `class` attribute set to 'intro' or 'outro'.
+
+`//div[@class='intro']/p/text()` returns text values of all `p` elements inside all `div` elements which have `class` attribute set to 'intro'.
+
+`//a/@href` returns `href` attribute value for each `a` element.
+
+`//a[starts-with(@href, 'https')]` returns all `a` elements with `href` attribute whose value starts with 'https'.
+
+`//a[ends-with(@href, 'fr')]` returns all `a` elements with `href` attribute whose value ends with 'fr'.
+
+`//a[contains(@href, 'google')]` returns all `a` elements with `href` attribute whose value contains 'google'.
+
+Functions used above are available in XPath 2.0 but Chrome uses libxml2 which implements XPath 1.0.
+
+[https://stackoverflow.com/questions/26163241/what-version-of-xpath-is-implemented-in-xmllibxml/]
+
+[https://stackoverflow.com/questions/25455351/does-chrome-use-xpath-2-0]
+
+`//a[contains(text(), 'France')]` returns all `a` elements whose text value contains 'France'. String passed to `contains()` function is case sensitive.
+
+## Selecting elements by their position
+
+`//ul[@id='items']/li` returns all `li` elements from within `ul` element with `id` with value 'items'.
+
+`//ul[@id='items']/li[1]` returns 1st `li` elements from within `ul` element with `id` with value 'items'. Index starts from 1.
+
+`//ul[@id='items']/li[position() = 1 or position() = 4]` returns 1st AND 4th `li` element from within `ul` element with `id` with value 'items'. position() values start from 1.
+
+`//ul[@id='items']/li[position() = 1 and contains(@text, 'hello')]` returns 1st `li` element from within `ul` element with `id` with value 'items'. position() values start from 1 but only if its text contains word 'hello'.
+
+`//ul[@id='items']/li[position() = 1 or position() = last()]` returns 1st and last `li` element from within `ul` element with `id` with value 'items'. `last()` helps so we don't need to count the index of the last item.
+
+`//ul[@id='items']/li[position() > 1]` returns all `li` element apart from the first one from within `ul` element with `id` with value 'items'. position() values start from 1.
+
+## Going up the HTML tree
+
+`//p[@id='unique']/parent::div` returns a `div` parent of `p` which has `id` with value 'unique'.
+
+Parent in XPath is called an axis. Axises (like `parent`, `ancestor` etc...) are used to navigate in HTML tree markup.
+
+If we don't know the parent element tag we can use `node()` which figures out what is the parent element automatically:
+
+`//p[@id='unique']/parent::node()` returns the parent element (whichever it is) of `p` which has `id` with value 'unique'.
+
+`//p[@id='unique']/ancestor::node()` returns all ancestor elements (parent and grandparent) of this `p`.
+
+`//p[@id='unique']/ancestor-or-self::node()` returns all ancestor elements of this `p` and `p` itself.
+
+`//p[@id='unique']/preceding::node()` returns all elements that precede this `p` excluding ancestors.
+
+`//p[@id='unique']/preceding::h1` returns all `h1` elements that precede this `p`.
+
+Elements are considered siblings if they share the same parent.
+
+`//p[@id='outside']/preceding-sibling::node()` returns sibling element of `p`.
+
+## Going down the HTML tree
+
+`//div[@class='intro']/p` returns all `p` elements inside all `div` elements which have `class` attribute set to 'intro'.
+
+This is the shortcut of using `child` axis:
+
+`//div[@class='intro']/child::p` returns all `p` elements inside all `div` elements which have `class` attribute set to 'intro'.
+
+`//div[@class='intro']/child::node()` returns all child elements (regardless od their tag type) inside all `div` elements which have `class` attribute set to 'intro'.
+
+`//div[@class='intro']/following::node()` returns all elements after this `div`.
+
+`//div[@class='intro']/following-sibling::node()` returns all elements after this `div` which are its siblings.
+
+`//div[@class='intro']/descendant::node()` returns all elements within this `div` which are its children and grandchildren.
+
 # References:
 
 https://docs.scrapy.org/en/latest/topics/commands.html
+https://jsoup.org/apidocs/org/jsoup/select/Selector.html
 
 
