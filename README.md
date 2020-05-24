@@ -194,6 +194,28 @@ This creates file `worldometers/worldometers/spiders/countries.py` which contain
 
 This class also contains an empty `parse` method which receives a response as its parameter. We'll later modify this method in order to extract data from response.
 
+To inspect `scrapy.Spider` class you can do:
+```
+$ python
+Python 3.6.9 (default, Apr 18 2020, 01:56:04)
+[GCC 8.4.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import scrapy
+>>> help(scrapy.Spider)
+>>> exit()
+```
+or simply extract documentation for entire package into a html file you can then refer to:
+```
+(venv) ../scrapy-demo/worldometers$ pydoc -w scrapy
+wrote scrapy.html
+```
+
+`scrapy list` (when run from a project directory) lists all spiders so after a new spider is created, we can see it listed:
+```
+(venv) ../scrapy-demo/worldometers$ scrapy list
+countries
+```
+
 # Scrapy shell
 
 It is used before we build spiders, to experiment with website and do some basic element selection, do debug XPath expressions or CSS selectors.
@@ -420,9 +442,17 @@ Available commands:
 Use "scrapy <command> -h" to see more info about a command
 ```
 
+# How to list all spiders?
+
+From a project root directory (the one which contains `scrapy.cfg`) run `scrapy list`:
+```
+(venv) ../scrapy-demo/worldometers$ scrapy list
+countries
+```
+
 # How to run a spider?
 
-From a project root directory (with `scrapy.cfg`):
+From a project root directory run `scrapy crawl <spider_name>`:
 
 ```
 (venv) ../scrapy-demo/worldometers$ scrapy crawl countries
