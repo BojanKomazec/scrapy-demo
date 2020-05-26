@@ -743,6 +743,53 @@ This is the shortcut of using `child` axis:
 
 `//div[@class='intro']/descendant::node()` returns all elements within this `div` which are its children and grandchildren.
 
+
+# Exporting data
+
+Scrapy exports data via Feed Exporters. Data can be exported to JSON, CSV and XML file.
+
+To export spider output to json file use `-o` (output) flag and use `.json` as file extension:
+
+```
+$ scrapy crawl countries -o population_dataset.json
+```
+Newly created file will look like:
+```
+[
+{"country_name": "China", "year": "2020", "population": "1,439,323,776"},
+{"country_name": "China", "year": "2019", "population": "1,433,783,686"},
+...
+]
+```
+
+On Linux, CTRL+SHIFT+I will format this file into JSON.
+
+
+```
+$ scrapy crawl countries -o population_dataset.csv
+```
+```
+country_name,year,population
+China,2020,"1,439,323,776"
+China,2019,"1,433,783,686"
+...
+```
+
+```
+$ scrapy crawl countries -o population_dataset.xml
+```
+```
+<?xml version="1.0" encoding="utf-8"?>
+<items>
+<item><country_name>Brazil</country_name><year>2020</year><population>212,559,417</population></item>
+<item><country_name>Brazil</country_name><year>2019</year><population>211,049,527</population></item>
+...
+```
+
+
+
+
+
 # References:
 
 https://docs.scrapy.org/en/latest/topics/commands.html
