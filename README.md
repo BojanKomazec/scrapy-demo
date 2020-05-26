@@ -354,6 +354,73 @@ We can assign the result to a variable of type `Selector`:
 'Countries in the world by population (2020)'
 ```
 
+If we find
+```
+...
+class CountriesSpider(scrapy.Spider):
+...
+```
+...place mouse pointer on `Spider` in `scrapy.Spider` and press F12 we'll get `venv/lib/python3.6/site-packages/scrapy/spiders/__init__.py` opened. If we find there
+```
+from scrapy.http import Request
+```
+...and press F12 on `http` in `scrapy.http` we'll get
+```
+venv/lib/python3.6/site-packages/scrapy/http/__init__.py
+```
+If we then press F12 on `TextResponse` in `from scrapy.http.response.text import TextResponse` we'll get:
+```
+venv/lib/python3.6/site-packages/scrapy/http/response/text.py
+```
+Here we can see:
+```
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+```
+So let's press F12 on `Selector` in `from scrapy.selector import Selector`. We'll get:
+```
+venv/lib/python3.6/site-packages/scrapy/selector/unified.py
+```
+There we find `from parsel import Selector as _ParselSelector`
+Let's press F12 on `Selector`. We'll get:
+
+```
+venv/lib/python3.6/site-packages/parsel/selector.py
+```
+...where we can finally find definition of `xpath()` method:
+
+```
+def xpath(self, query, namespaces=None, **kwargs):
+    """
+    Find nodes matching the xpath ``query`` and return the result as a
+    :class:`SelectorList` instance with all elements flattened. List
+    elements implement :class:`Selector` interface too.
+
+    ``query`` is a string containing the XPATH query to apply.
+
+    ``namespaces`` is an optional ``prefix: namespace-uri`` mapping (dict)
+    for additional prefixes to those registered with ``register_namespace(prefix, uri)``.
+    Contrary to ``register_namespace()``, these prefixes are not
+    saved for future calls.
+
+    Any additional named arguments can be used to pass values for XPath
+    variables in the XPath expression, e.g.::
+
+        selector.xpath('//a[href=$url]', url="http://www.example.com")
+    """
+
+def get(self):
+    """
+    Serialize and return the matched nodes in a single unicode string.
+    Percent encoded content is unquoted.
+    """
+
+def getall(self):
+    """
+    Serialize and return the matched node in a 1-element list of unicode strings.
+    """
+```
+
 To use CSS Selector:
 ```
 >>> title_css = response.css("h1::text")
@@ -582,6 +649,19 @@ To select element by the value of its attribute use `[@attribute=value]` predica
 
 `//div[@class='intro']` returns all `div` elements which have `class` attribute set to 'intro'.
 
+<br/>
+<br/>
+If query returns multiple results (an array), we can select desired result by using index syntax:
+E.g.
+
+`//table[@class="table table-striped table-bordered table-hover table-condensed table-list"]`
+
+returns 2 tables but we want only the first one. We'll use:
+
+`(//table[@class="table table-striped table-bordered table-hover table-condensed table-list"])[1]`
+<br/>
+<br/>
+
 `//div[@class='intro']/p` returns all `p` elements inside all `div` elements which have `class` attribute set to 'intro'.
 
 `//div[@class='intro' or @class='intro']` returns all `div` elements which have `class` attribute set to 'intro' or 'outro'.
@@ -660,5 +740,4 @@ This is the shortcut of using `child` axis:
 
 https://docs.scrapy.org/en/latest/topics/commands.html
 https://jsoup.org/apidocs/org/jsoup/select/Selector.html
-
 
