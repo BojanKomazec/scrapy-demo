@@ -187,6 +187,13 @@ Created spider 'countries' using template 'basic' in module:
   worldometers.spiders.countries
 ```
 
+Make sure that URL does not contain protocol (`http://`, `https://`) or trailing forward slash (`/`) as otherwise we might get errors like:
+```
+2020-05-26 12:01:45 [scrapy.downloadermiddlewares.redirect] DEBUG: Redirecting (301) to <GET https://worldpopulationreview.com/countries/countries-by-national-debt//> from <GET http://worldpopulationreview.com/countries/countries-by-national-debt//>
+2020-05-26 12:01:45 [scrapy.core.engine] DEBUG: Crawled (404) <GET https://worldpopulationreview.com/countries/countries-by-national-debt//> (referer: None)
+2020-05-26 12:01:45 [scrapy.spidermiddlewares.httperror] INFO: Ignoring response <404 https://worldpopulationreview.com/countries/countries-by-national-debt//>: HTTP status code is not handled or not allowed
+```
+
 This creates file `worldometers/worldometers/spiders/countries.py` which contains class `CountriesSpider` which inherits `scrapy.Spider`. It has the following predefined properties:
 * `name` - set to name uniquely identifies this spider: `countries`
 * `allowed_domains` - list of domain names that spider is allowed to access and scrape. Originally it contains `www.worldometers.info/world-population/population-by-country` but we can remove path in this url and leave only domain name: `www.worldometers.info/`. If any scraped page contains links to web pages at any other domain name, those pages will not be scraped. Domain name does not contain protocol prefix (e.g. `http://`).
